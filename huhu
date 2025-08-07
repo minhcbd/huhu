@@ -25,14 +25,15 @@ function base64.decode(data)
 end
 
 local encodedURL = [[
-aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL21pbmhjYmQvQ29vcmRpbmF0ZXMvcmVmcy9oZWFkcy9tYWluL0Nvb3JkaW5hdGVz
+aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL21pbmhjYmQvaHVodS9yZWZzL2hlYWRzL21haW4vaHVodQ==
 ]]
+
 local decodedURL = base64.decode(encodedURL)
 print("[INFO] Decoded URL:", decodedURL)
 
-local HttpService = game:GetService("HttpService")
+-- Dùng game:HttpGet để lấy nội dung script (base64)
 local success, response = pcall(function()
-	return HttpService:GetAsync(decodedURL)
+	return game:HttpGet(decodedURL)
 end)
 
 if success and response then
